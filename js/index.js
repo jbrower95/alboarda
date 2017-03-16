@@ -110,7 +110,7 @@ function launchEQ() {
     drawAmplitude();
 };
 
-var WIDTH = 1000;
+var WIDTH = $(window).width();
 var HEIGHT = 400;
 var canvasCtx = null;
 
@@ -171,6 +171,18 @@ function drawEQ() {
     	$(alberta).css("bottom", sum * 1.5);
     });
 }
+
+$(window).resize(function(resize) {
+	/* Adjust albertas */
+	$(albertas).each(function(i, a) {
+		$(a).remove();
+	});
+	createAlbertas($("#albertas"), ALBERTA_RESOLUTION);
+
+	/* Adjust canvas */
+	WIDTH = $(window).width();
+	canvasCtx.canvas.width = WIDTH;
+});
 
 $(document).ready(function() {
 	createAlbertas($("#albertas"), ALBERTA_RESOLUTION);
