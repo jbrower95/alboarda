@@ -19,6 +19,14 @@ h1 {
 	position: absolute;
 }
 
+.looper {
+	display: inline-block;
+	background-color: black;
+	color: white;
+	padding: 12px;
+	margin-top: 30px;
+}
+
 canvas {
     padding-left: 0;
     padding-right: 0;

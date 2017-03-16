@@ -8,28 +8,94 @@ var allSounds = new Pizzicato.Group();
 
 var ALBERTA_RESOLUTION = 16;
 
+var event_bus = new EventPipe();
+
+var loops = {};
+loops['1'] = new Loop(event_bus);
+loops['2'] = new Loop(event_bus);
+loops['3'] = new Loop(event_bus);
+loops['4'] = new Loop(event_bus);
+loops['5'] = new Loop(event_bus);
+
 function pressedChar(char) {
-	char = char.toLowerCase();
-	if (sounds[char] != null) {
-		sounds[char].play();
+	let c = char.toLowerCase();
+
+	if (c === "-") {
+		if (!$("#loopers").is(':visible')) {
+			$("#loopers").show();
+			console.log("Showing loopers.");
+		} else {
+			$("#loopers").hide();
+			console.log("Hiding loopers.");
+		}
+	}
+
+	if ($("#loopers").css('display') !== 'none') {
+		if (loops[c] != null) {
+			var which = parseInt(c) - 1;
+			var looper = $($(".looper")[which]);
+			console.log(looper);
+
+			if (loops[c].isRecording()) {
+				// stop recording + play
+				loops[c].stopRecording();
+				loops[c].play();
+				console.log("[loop][" + c + "] - Play");
+				looper.css('background-color', 'green');
+			} else {
+				if (loops[c].isPlaying()) {
+					// reset
+					loops[c].stop();
+					loops[c].clear();
+					console.log("[loop][" + c + "] - Reset");
+					looper.css('background-color', 'black');
+				} else {
+					// start recording
+					loops[c].record();
+					console.log("[loop][" + c + "] - Record");
+					looper.css('background-color', 'red');
+				}
+			}
+		}
+	}
+
+	if (sounds[c] != null) {
+		sounds[c].play();
+		event_bus.publish(() => {console.log("Play!"); sounds[c].play();});
 	}
 }
 
 function releasedChar(char) {
-	char = char.toLowerCase();
-	if (sounds[char] != null) {
-		sounds[char].stop();
+	let c = char.toLowerCase();
+	if (sounds[c] != null) {
+		sounds[c].stop();
+		event_bus.publish(() => {console.log("Stop!"); sounds[c].stop();});
 	}
 }
 
 function startListening() {
+	let inFlight = {};
+
 	$(document).keypress(function (e) {
-		pressedChar(String.fromCharCode(e.which));
-		e.preventDefault();
+		//this will void fake keypresses
+		let key = String.fromCharCode(e.which).toLowerCase();
+		if (inFlight[key] == null) {
+			pressedChar(String.fromCharCode(e.which));
+			inFlight[key] = true;
+		} else {
+			console.log("Debounced.");
+		}
 	});
 
 	$(document).keyup(function (e) {
-		releasedChar(String.fromCharCode(e.which));
+		//this will void fake keypresses
+		let key = String.fromCharCode(e.which).toLowerCase();
+		if(inFlight[key] === true) {
+			releasedChar(String.fromCharCode(e.which));
+			inFlight[key] = null;
+	    } else {
+			console.log("Debounced.");
+		}
 	});
 }
 
@@ -43,7 +109,7 @@ function loadSounds(sounds, letters, resolve, reject) {
 	        type: 'sawtooth'
 	    }
 	});
-	refWave.volume = 0;
+	refWave.volume = 0.0000001;
 	refWave.play();
 	allSounds.addSound(refWave);
 	if (resolve == null) {
@@ -64,7 +130,7 @@ function loadSounds(sounds, letters, resolve, reject) {
 			var path = "sound/alberta/" + current + ".mp3";
 			sounds[current] = new Pizzicato.Sound({ 
 						    source: 'file',
-						    options: { path: path, loop: true }
+						    options: { path: path, loop: false }
 						}, function() {
 						    // Sound loaded -- continue onward.
 							allSounds.addSound(sounds[current]);
@@ -158,7 +224,7 @@ function drawEQ() {
     var numBins = analyser.frequencyBinCount;
     var perAlberta = parseInt(numBins / albertas.length);
 
-    var hiPass = function(index) { return  (index + 0.01) * 2; };
+    var hiPass = function(index) { return  (index + 0.01) ^ 2; };
     
     $(albertas).each(function (index, alberta) {
     	var sum = 0;
