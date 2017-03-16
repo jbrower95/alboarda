@@ -1,0 +1,38 @@
+* {
+	padding: 0px;
+	margin: 0px;
+	font-family: "Courier"
+}
+
+body {
+	background-color: #f68b8b;
+	text-align: center;
+}
+
+h1 {
+	font-size: 50px;
+	padding: 20px;
+}
+
+#fullpage {
+	padding: 50px;
+	text-align: center;
+	position: absolute;
+}
+
+canvas {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#textarea {
+	font-family: "Times New Roman";
+	font-size: 25px;
+	width: 500px;
+	height: 600px;
+	border: none;
+    border-color: Transparent; 
+    overflow: auto;  
+}
